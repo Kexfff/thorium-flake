@@ -137,6 +137,7 @@ stdenv.mkDerivation rec {
     # The original desktop file might have hardcoded paths or incorrect icon names
     # We use sed to ensure the Exec and Icon lines are correctly pointed to our store paths
     sed -i "s|/opt/chromium.org/thorium/thorium-browser|thorium-browser|g" $out/share/applications/thorium-browser.desktop
+    sed -i "s|/usr/bin/thorium-browser|thorium-browser|g" $out/share/applications/thorium-browser.desktop
     # In case the icon path was absolute in the original file
     sed -i "s|Icon=/opt/chromium.org/thorium/.*|Icon=thorium-browser|g" $out/share/applications/thorium-browser.desktop
 
