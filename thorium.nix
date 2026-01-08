@@ -134,9 +134,11 @@ stdenv.mkDerivation rec {
     cp usr/share/applications/thorium-browser.desktop $out/share/applications/thorium-browser.desktop || \
     cp $out/lib/thorium/thorium-browser.desktop $out/share/applications/thorium-browser.desktop
 
-    substituteInPlace $out/share/applications/thorium-browser.desktop \
-      --replace "/opt/chromium.org/thorium/thorium-browser" "$out/bin/thorium-browser" \
-      --replace "Icon=thorium-browser" "thorium-browser"
+    # The original desktop file might have hardcoded paths or incorrect icon names
+    # We use sed to ensure the Exec and Icon lines are correctly pointed to our store paths
+    sed -i "s|/opt/chromium.org/thorium/thorium-browser|$out/bin/thorium-browser|g" $out/share/applications/thorium-browser.desktop
+    # In case the icon path was absolute in the original file
+    sed -i "s|Icon=/opt/chromium.org/thorium/.*|Icon=thorium-browser|g" $out/share/applications/thorium-browser.desktop
 
     # Icons
     for size in 16 24 32 48 64 128 256 512; do
@@ -148,9 +150,8 @@ stdenv.mkDerivation rec {
     mkdir -p $out/bin
     makeWrapper $out/lib/thorium/thorium-browser $out/bin/thorium-browser \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath buildInputs}" \
-      --add-flags "--no-sandbox" \
-      --add-flags "--enable-features=UseOzonePlatform" \
-      --add-flags "--ozone-platform=wayland"
+      --add-flags "--ozone-platform-hint=auto" \
+      --add-flags "--enable-features=WaylandWindowDecorations"
 
     runHook postInstall
   '';
